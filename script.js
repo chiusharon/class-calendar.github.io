@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     const app = {
         isAdmin: false,
         currentMonth: new Date().getMonth(),
@@ -57,7 +57,7 @@
             const firstDay = new Date(this.currentYear, this.currentMonth, 1).getDay();
             
             // 添加星期標題
-            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
             weekdays.forEach(day => {
                 const dayHeader = document.createElement('div');
                 dayHeader.classList.add('calendar-header');
@@ -108,6 +108,7 @@
         },
 
         addEvent(date) {
+            if (!this.isAdmin) return;
             const description = prompt('請輸入事件描述:');
             if (description) {
                 if (!this.events[date]) {
@@ -119,6 +120,7 @@
         },
 
         editEvent(date, index) {
+            if (!this.isAdmin) return;
             const event = this.events[date][index];
             const newDescription = prompt('請輸入新的事件描述:', event.description);
             
@@ -129,6 +131,7 @@
         },
 
         deleteEvent(date, index) {
+            if (!this.isAdmin) return;
             if (confirm('確定要刪除這個事件嗎？')) {
                 this.events[date].splice(index, 1);
                 if (this.events[date].length === 0) {

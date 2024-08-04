@@ -1,0 +1,36 @@
+﻿body {
+    font-family: "標楷體", sans-serif;
+}
+
+#calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.calendar-header {
+    text-align: center;
+    font-weight: bold;
+    padding: 5px;
+    background-color: #f0f0f0;
+}
+
+.calendar-day {
+    border: 1px solid #ccc;
+    min-height: 100px;
+    padding: 5px;
+    overflow: hidden;
+}
+
+.calendar-day.empty {
+    background-color: #f9f9f9;
+}
+
+.event {
+    margin-bottom: 5px;
+    word-wrap: break-word;
+    font-size: 14px;
+    background-color: #e6f3ff;
+    padding: 2px 5px;
+    border-radius: 3px;
+}

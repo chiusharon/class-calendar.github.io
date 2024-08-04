@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentMonth: new Date().getMonth(),
         currentYear: new Date().getFullYear(),
         events: {},
+        pendingEvents: {},
 
         init() {
             this.setupMonthSelector();
@@ -44,10 +45,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.isAdmin = true;
                     alert('管理員登入成功！');
                     this.renderCalendar();
+                    this.showAdminControls();
                 } else {
                     alert('密碼錯誤！');
                 }
             });
+        },
+
+        showAdminControls() {
+            const adminControls = document.createElement('div');
+            adminControls.id = 'admin-controls';
+            adminControls.innerHTML = `
+                <button id="publish-btn">發佈所有待發佈事件</button>
+                <button id="logout-btn">登出</button>
+            `;
+            document.body.appendChild(adminControls);
+
+            document.getElementById('publish-btn').addEventListener('click', () => this.publishEvents());
+            document.getElementById('logout-btn').addEventListener('click', () => this.logout());
+        },
+
+        logout() {
+            this.isAdmin = false;
+            document.getElementById('admin-controls').remove();
+            this.renderCalendar();
         },
 
         renderCalendar() {
@@ -97,6 +118,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (this.isAdmin) {
+                    if (this.pendingEvents[dateKey]) {
+                        this.pendingEvents[dateKey].forEach((event, index) => {
+                            const eventElement = document.createElement('div');
+                            eventElement.classList.add('event', 'pending');
+                            eventElement.textContent = `[待發佈] ${event.description}`;
+                            eventElement.onclick = () => this.editPendingEvent(dateKey, index);
+                            eventElement.oncontextmenu = (e) => {
+                                e.preventDefault();
+                                this.deletePendingEvent(dateKey, index);
+                            };
+                            dayElement.appendChild(eventElement);
+                        });
+                    }
+
                     const addButton = document.createElement('button');
                     addButton.textContent = '+';
                     addButton.onclick = () => this.addEvent(dateKey);
@@ -108,19 +143,17 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         addEvent(date) {
-            if (!this.isAdmin) return;
             const description = prompt('請輸入事件描述:');
             if (description) {
-                if (!this.events[date]) {
-                    this.events[date] = [];
+                if (!this.pendingEvents[date]) {
+                    this.pendingEvents[date] = [];
                 }
-                this.events[date].push({ description });
+                this.pendingEvents[date].push({ description });
                 this.renderCalendar();
             }
         },
 
         editEvent(date, index) {
-            if (!this.isAdmin) return;
             const event = this.events[date][index];
             const newDescription = prompt('請輸入新的事件描述:', event.description);
             
@@ -130,8 +163,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
 
+        editPendingEvent(date, index) {
+            const event = this.pendingEvents[date][index];
+            const newDescription = prompt('請輸入新的事件描述:', event.description);
+            
+            if (newDescription) {
+                this.pendingEvents[date][index] = { description: newDescription };
+                this.renderCalendar();
+            }
+        },
+
         deleteEvent(date, index) {
-            if (!this.isAdmin) return;
             if (confirm('確定要刪除這個事件嗎？')) {
                 this.events[date].splice(index, 1);
                 if (this.events[date].length === 0) {
@@ -139,6 +181,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 this.renderCalendar();
             }
+        },
+
+        deletePendingEvent(date, index) {
+            if (confirm('確定要刪除這個待發佈事件嗎？')) {
+                this.pendingEvents[date].splice(index, 1);
+                if (this.pendingEvents[date].length === 0) {
+                    delete this.pendingEvents[date];
+                }
+                this.renderCalendar();
+            }
+        },
+
+        publishEvents() {
+            for (let date in this.pendingEvents) {
+                if (!this.events[date]) {
+                    this.events[date] = [];
+                }
+                this.events[date] = this.events[date].concat(this.pendingEvents[date]);
+            }
+            this.pendingEvents = {};
+            this.renderCalendar();
+            alert('所有待發佈事件已發佈！');
         }
     };
 

@@ -7,10 +7,22 @@ document.addEventListener('DOMContentLoaded', () => {
         pendingEvents: {},
 
         init() {
+            this.loadEvents();
             this.setupMonthSelector();
             this.setupColorPickers();
             this.setupAdminLogin();
             this.renderCalendar();
+        },
+
+        loadEvents() {
+            const savedEvents = localStorage.getItem('calendarEvents');
+            if (savedEvents) {
+                this.events = JSON.parse(savedEvents);
+            }
+        },
+
+        saveEvents() {
+            localStorage.setItem('calendarEvents', JSON.stringify(this.events));
         },
 
         setupMonthSelector() {
@@ -159,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (newDescription) {
                 this.events[date][index] = { description: newDescription };
+                this.saveEvents();
                 this.renderCalendar();
             }
         },
@@ -179,6 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (this.events[date].length === 0) {
                     delete this.events[date];
                 }
+                this.saveEvents();
                 this.renderCalendar();
             }
         },
@@ -201,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.events[date] = this.events[date].concat(this.pendingEvents[date]);
             }
             this.pendingEvents = {};
+            this.saveEvents();
             this.renderCalendar();
             alert('所有待發佈事件已發佈！');
         }
